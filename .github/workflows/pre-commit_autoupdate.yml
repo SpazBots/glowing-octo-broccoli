@@ -43,7 +43,7 @@ jobs:
           fi
       - name: Commit changes
         if: steps.changes.outputs.changed
-        run: git commit -a
+        run: git commit -am "Update pre-commit hooks"
       - uses: peter-evans/create-pull-request@v3
         with:
           branch: update/pre-commit-hooks
