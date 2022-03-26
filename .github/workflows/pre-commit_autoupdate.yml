@@ -32,9 +32,15 @@ jobs:
       - name: Check if there are changes
         id: changes
         if: steps.run_hooks.outcome == 'failure'
-        uses: UnicornGlobal/has-changes-action@v1.0.11
+        run: |
+          if [[ -z "$(git status --porcelain)" ]];
+          then
+            echo ::set-output name=changed::false
+          else
+            echo ::set-output name=changed::true
+          fi
       - name: Commit changes
-        if: steps.changes.outputs.changed == 1
+        if: steps.changes.outputs.changed
         run: git commit -a
       - uses: peter-evans/create-pull-request@v3
         with:
