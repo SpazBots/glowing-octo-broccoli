@@ -20,9 +20,9 @@ jobs:
           pre-commit autoupdate
           if [[ -z "$(git status --porcelain)" ]];
           then
-            echo ::set-output name=changed::false
+            echo ::set-output name=changed::0
           else
-            echo ::set-output name=changed::true
+            echo ::set-output name=changed::1
           fi
       - name: Commit hook changes
         if: steps.update_hooks.outputs.changed
@@ -37,9 +37,9 @@ jobs:
         run: |
           if [[ -z "$(git status --porcelain)" ]];
           then
-            echo ::set-output name=changed::false
+            echo ::set-output name=changed::0
           else
-            echo ::set-output name=changed::true
+            echo ::set-output name=changed::1
           fi
       - name: Commit changes
         if: steps.changes.outputs.changed
