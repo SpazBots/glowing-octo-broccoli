@@ -4,13 +4,6 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-python@v2
-      - uses: actions/cache@v1
-        with:
-          key: v0-${{ runner.os }}-pip-lint-${{ hashFiles('setup.py') }}
-          path: ~/.cache/pip
-          restore-keys: |
-            v0-${{ runner.os }}-pip-lint-
-            v0-${{ runner.os }}-pip-
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
@@ -22,8 +15,17 @@ jobs:
           git config --global committer.email noreply@github.com
           git config --global committer.name GitHub
       - name: Update hooks
-        run: pre-commit autoupdate
+        id: update_hooks
+        run: |
+          pre-commit autoupdate
+          if [[ -z "$(git status --porcelain)" ]];
+          then
+            echo ::set-output name=changed::false
+          else
+            echo ::set-output name=changed::true
+          fi
       - name: Commit hook changes
+        if: steps.update_hooks.outputs.changed
         run: git commit -m "Update pre-commit hooks"
       - name: Run hooks
         id: run_hooks
