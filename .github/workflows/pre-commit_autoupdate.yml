@@ -1,0 +1,41 @@
+jobs:
+  auto-update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+      - uses: actions/cache@v1
+        with:
+          key: v0-${{ runner.os }}-pip-lint-${{ hashFiles('setup.py') }}
+          path: ~/.cache/pip
+          restore-keys: |
+            v0-${{ runner.os }}-pip-lint-
+            v0-${{ runner.os }}-pip-
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install .[dev]
+      - name: Update hooks
+        run: pre-commit autoupdate
+      - name: Commit hook changes
+        run: git commit -m "Update pre-commit hooks"
+      - name: Run hooks
+        id: run_hooks
+        run: pre-commit run --all-files
+        continue-on-error: true
+      - name: Check if there are changes
+        id: changes
+        if: steps.run_hooks.outcome == 'failure'
+        uses: UnicornGlobal/has-changes-action@v1.0.11
+      - name: Commit changes
+        if: steps.changes.outputs.changed == 1
+        run: git commit -a
+      - uses: peter-evans/create-pull-request@v3
+        with:
+          branch: update/pre-commit-hooks
+          title: Update pre-commit hooks
+          commit-message: "Update pre-commit hooks"
+          body: Update versions of pre-commit hooks to the latest version.
+name: 'Update pre-commit hooks'
+on:
+  workflow_call:
